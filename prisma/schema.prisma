@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id
+
+  nickname  String
+  avatarUrl String
+
+  level Int @default(0)
+  xp    Int @default(0)
+
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  xpTransactions XpTransaction[]
+  leaderboard    Leaderboard?
+
+  @@map("user")
+}
+
+model XpTransaction {
+  id     Int    @id @default(autoincrement())
+  userId String
+
+  amount Int
+
+  type   XpTransactionType
+  source XpTransactionSource @default(SYSTEM)
+  reason String?
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("xp_transaction")
+}
+
+enum XpTransactionType {
+  ADD
+  REMOVE
+}
+
+enum XpTransactionSource {
+  SYSTEM
+  ADMIN
+}
+
+model Leaderboard {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  xp             Int
+  level          Int
+  currentRank    Int
+  previousRank   Int
+  rankDifference Int
+  updatedAt      DateTime @updatedAt
+}
