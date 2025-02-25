@@ -26,19 +26,11 @@ import { LeaderboardModule } from './leaderboard/leaderboard.module';
         },
         registerCommandOptions: [
           {
-            forGuild: '1343469195471618048',
+            forGuild: configSerivce.get('GUILD_ID_WITH_COMMANDS'),
             removeCommandsBefore: true,
             allowFactory: (message: Message) =>
-              message.member.id === '403025222921486338' &&
               !message.author.bot &&
-              message.content === '!deploy-dev',
-          },
-          {
-            forGuild: '645137556777992203',
-            removeCommandsBefore: true,
-            allowFactory: (message: Message) =>
               message.member.id === '403025222921486338' &&
-              !message.author.bot &&
               message.content === '!deploy-prod',
           },
         ],

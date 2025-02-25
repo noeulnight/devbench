@@ -15,11 +15,7 @@ import { RevokeXpCommand } from './revoke-xp.command';
     'en-US': 'Command related to xp',
     ko: '경험치 관련 명령어입니다.',
   },
-  defaultMemberPermissions: [
-    PermissionsBitField.Flags.Administrator,
-    PermissionsBitField.Flags.ManageChannels,
-    PermissionsBitField.Flags.ManageGuild,
-  ],
+  defaultMemberPermissions: [PermissionsBitField.Flags.ModerateMembers],
   include: [GrantXpCommand, RevokeXpCommand],
 })
 @Injectable()
