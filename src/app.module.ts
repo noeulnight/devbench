@@ -26,7 +26,7 @@ import { LeaderboardModule } from './leaderboard/leaderboard.module';
         },
         registerCommandOptions: [
           {
-            forGuild: configSerivce.get('GUILD_ID_WITH_COMMANDS'),
+            forGuild: configSerivce.get('GUILD_ID'),
             removeCommandsBefore: true,
             allowFactory: (message: Message) =>
               !message.author.bot &&
