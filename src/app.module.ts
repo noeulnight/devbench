@@ -7,6 +7,11 @@ import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { XpModule } from './xp/xp.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
+import { PointModule } from './point/point.module';
+import { ProductModule } from './product/product.module';
+import { AuthModule } from './auth/auth.module';
+import { DiscordModule as DiscordNestModule } from './discord/discord.module';
+import { PurchaseModule } from './purchase/purchase.module';
 
 @Module({
   imports: [
@@ -16,7 +21,7 @@ import { LeaderboardModule } from './leaderboard/leaderboard.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configSerivce: ConfigService) => ({
-        token: configSerivce.get('DISCORD_TOKEN'),
+        token: configSerivce.get('DISCORD_BOT_TOKEN'),
         discordClientOptions: {
           intents: [
             GatewayIntentBits.Guilds,
@@ -26,20 +31,25 @@ import { LeaderboardModule } from './leaderboard/leaderboard.module';
         },
         registerCommandOptions: [
           {
-            forGuild: configSerivce.get('GUILD_ID'),
+            forGuild: configSerivce.get('DISCORD_GUILD_ID'),
             removeCommandsBefore: true,
             allowFactory: (message: Message) =>
               !message.author.bot &&
               message.member.id === '403025222921486338' &&
-              message.content === '!deploy-prod',
+              message.content === '!deploy',
           },
         ],
       }),
     }),
-    LevelModule,
-    UserModule,
     XpModule,
+    AuthModule,
+    UserModule,
+    LevelModule,
+    PointModule,
+    ProductModule,
     LeaderboardModule,
+    DiscordNestModule,
+    PurchaseModule,
   ],
 })
 export class AppModule {}

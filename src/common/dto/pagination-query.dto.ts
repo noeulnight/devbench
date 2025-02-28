@@ -7,6 +7,6 @@ export class PaginationQueryDto {
   pageSize?: number = 10;
 
   @IsNumber()
-  @Transform(({ value, obj }) => obj.pageSize * (Math.max(value, 1) - 1))
-  page?: number = 1;
+  @Transform(({ value, obj }) => obj.pageSize * (Math.max(value, 0) - 1))
+  page?: number = 0;
 }

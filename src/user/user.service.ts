@@ -15,7 +15,7 @@ export class UserService {
 
   public async getUserById(id: string) {
     const guildMember = await this.client.guilds.cache
-      .get(this.configService.get('GUILD_ID'))
+      .get(this.configService.get('DISCORD_GUILD_ID'))
       .members.fetch(id);
 
     const user = await this.prismaService.user.upsert({
@@ -29,6 +29,7 @@ export class UserService {
         nickname: guildMember?.displayName,
         avatarUrl: guildMember?.user.avatarURL(),
       },
+      include: { leaderboard: true },
     });
 
     return user;

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { XpTransactionSource, XpTransactionType } from '@prisma/client';
+import { TransactionSource } from '@prisma/client';
+import { TransactionType } from '@prisma/client';
 import { GuildMember } from 'discord.js';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
@@ -63,12 +64,7 @@ export class XpService {
     };
   }
 
-  public async addXp(
-    guildUser: GuildMember,
-    amount: number,
-    source: XpTransactionSource = XpTransactionSource.SYSTEM,
-    reason?: string,
-  ) {
+  public async addXp(guildUser: GuildMember, amount: number, reason?: string) {
     const user = await this.userService.getUserById(guildUser.id);
 
     const xp = user.xp + amount;
@@ -80,12 +76,12 @@ export class XpService {
         data: { xp, level: level.currentLevel },
       });
 
-      await tx.xpTransaction.create({
+      await tx.transaction.create({
         data: {
-          amount,
           userId: user.id,
-          type: XpTransactionType.ADD,
-          source,
+          amount,
+          source: TransactionSource.XP,
+          type: TransactionType.EARN,
           reason,
         },
       });
@@ -100,11 +96,9 @@ export class XpService {
   public async removeXp(
     guildUser: GuildMember,
     amount: number,
-    source: XpTransactionSource = XpTransactionSource.SYSTEM,
     reason?: string,
   ) {
     const user = await this.userService.getUserById(guildUser.id);
-
     const xp = user.xp - amount < 0 ? 0 : user.xp - amount;
     const level = this.calculateLevelByXp(xp);
 
@@ -114,12 +108,12 @@ export class XpService {
         data: { xp, level: level.currentLevel },
       });
 
-      await tx.xpTransaction.create({
+      await tx.transaction.create({
         data: {
-          amount,
           userId: user.id,
-          type: XpTransactionType.REMOVE,
-          source,
+          amount,
+          source: TransactionSource.XP,
+          type: TransactionType.SPEND,
           reason,
         },
       });

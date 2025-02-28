@@ -32,7 +32,7 @@ export class RevokeXpOptions {
   amount: number;
 
   @Param({
-    description: '지급 사유',
+    description: '제거 사유',
     descriptionLocalizations: {
       'en-US': 'reason',
       ko: '사유',
@@ -45,4 +45,19 @@ export class RevokeXpOptions {
     type: ParamType.STRING,
   })
   reason?: string;
+
+  @Param({
+    description: '경험치와 함께 포인트도 같이 제거할 것인지 여부',
+    descriptionLocalizations: {
+      'en-US': 'Remove point with xp',
+      ko: '경험치와 함께 포인트도 제거할 것인지 여부',
+    },
+    nameLocalizations: {
+      'en-US': 'point',
+      ko: '포인트',
+    },
+    required: false,
+    type: ParamType.BOOLEAN,
+  })
+  point?: boolean;
 }

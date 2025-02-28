@@ -14,52 +14,103 @@ model User {
   avatarUrl String
 
   level Int @default(0)
+  point Int @default(0)
   xp    Int @default(0)
 
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  xpTransactions XpTransaction[]
-  leaderboard    Leaderboard?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  transactions Transaction[]
+  leaderboard  Leaderboard?
+  Purchase     Purchase[]
 
   @@map("user")
 }
 
-model XpTransaction {
+model Transaction {
   id     Int    @id @default(autoincrement())
   userId String
 
   amount Int
 
-  type   XpTransactionType
-  source XpTransactionSource @default(SYSTEM)
+  source TransactionSource
+  type   TransactionType
   reason String?
 
   user User @relation(fields: [userId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Purchase  Purchase[]
 
-  @@map("xp_transaction")
+  @@map("transaction")
 }
 
-enum XpTransactionType {
-  ADD
-  REMOVE
+enum TransactionSource {
+  XP
+  POINT
 }
 
-enum XpTransactionSource {
-  SYSTEM
-  ADMIN
+enum TransactionType {
+  EARN
+  SPEND
+  REFUND
 }
 
 model Leaderboard {
-  id             String   @id @default(cuid())
-  userId         String   @unique
-  user           User     @relation(fields: [userId], references: [id])
+  userId String @id
+  user   User   @relation(fields: [userId], references: [id])
+
   xp             Int
   level          Int
   currentRank    Int
   previousRank   Int
   rankDifference Int
   updatedAt      DateTime @updatedAt
+
+  @@map("leaderboard")
+}
+
+model Product {
+  id Int @id @default(autoincrement())
+
+  name            String
+  price           Int
+  productImageUrl String
+  description     String?
+
+  isHidden Boolean @default(false)
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  purchase  Purchase[]
+
+  @@map("product")
+}
+
+model Purchase {
+  id String @id @default(cuid())
+
+  price  Int
+  status PurchaseStatus
+
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  transactionId Int?
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("purchase")
+}
+
+enum PurchaseStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
 }

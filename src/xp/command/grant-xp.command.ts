@@ -9,7 +9,6 @@ import {
 } from 'discord.js';
 import { GrantXpOptions } from '../option/grant-xp.options';
 import { XpService } from '../xp.service';
-import { XpTransactionSource } from '@prisma/client';
 
 @SubCommand({
   name: 'grant',
@@ -33,22 +32,19 @@ export class GrantXpCommand {
     @InteractionEvent(SlashCommandPipe) options: GrantXpOptions,
   ) {
     const user = await interaction.guild.members.fetch(options.user);
-    const { level } = await this.xpService.addXp(
-      user,
-      options.amount,
-      XpTransactionSource.ADMIN,
-      options.reason,
-    );
+
+    const { amount, reason } = options;
+    const { level } = await this.xpService.addXp(user, amount, reason);
 
     const embed = new EmbedBuilder()
       .setColor(Colors.Green)
       .setDescription(
-        `경험치를 ${user.user.username}님에게 ${options.amount}만큼 지급했습니다.`,
+        `경험치를 ${user.user.username}님에게 ${amount}만큼 지급했습니다.`,
       )
       .setFields(
         {
           name: '지급 경험치',
-          value: `${options.amount}`,
+          value: `${amount}`,
           inline: true,
         },
         {
@@ -63,7 +59,7 @@ export class GrantXpCommand {
         },
         {
           name: '지급 사유',
-          value: options.reason ?? '없음',
+          value: reason ?? '없음',
         },
       );
 

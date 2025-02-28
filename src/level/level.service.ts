@@ -1,6 +1,5 @@
 import { On } from '@discord-nestjs/core';
 import { Injectable } from '@nestjs/common';
-import { XpTransactionSource } from '@prisma/client';
 import {
   AttachmentBuilder,
   EmbedBuilder,
@@ -8,6 +7,7 @@ import {
   Message,
 } from 'discord.js';
 import { LevelImageService } from 'src/level-image/level-image.service';
+import { PointService } from 'src/point/point.service';
 import { UserService } from 'src/user/user.service';
 import { CalculateLevelByXpResult, XpService } from 'src/xp/xp.service';
 
@@ -20,6 +20,7 @@ export class LevelService {
     private readonly xpService: XpService,
     private readonly userService: UserService,
     private readonly levelImageService: LevelImageService,
+    private readonly pointService: PointService,
   ) {}
 
   private calculateAmount(length: number) {
@@ -41,8 +42,12 @@ export class LevelService {
     const { hasLevelUp, level } = await this.xpService.addXp(
       message.member,
       amount,
-      XpTransactionSource.SYSTEM,
     );
+
+    await this.pointService.addPoint({
+      userId: message.member.id,
+      amount,
+    });
 
     if (hasLevelUp) {
       const { attachment, embed } = await this.generateLevelEmbed(
@@ -58,7 +63,7 @@ export class LevelService {
 
       setTimeout(async () => {
         await noticeMessage.delete();
-      }, 5000);
+      }, 6000);
     }
   }
 
@@ -67,12 +72,11 @@ export class LevelService {
     targetLevel?: number,
   ) {
     const user = await this.userService.getUserById(discordUser.id);
-    if (targetLevel) {
-      const level = this.xpService.calculateXpToLevel(user.xp, targetLevel);
-      return this.generateLevelEmbed(discordUser, level, false);
-    }
 
-    const level = this.xpService.calculateLevelByXp(user.xp);
+    const level = targetLevel
+      ? this.xpService.calculateXpToLevel(user.xp, targetLevel)
+      : this.xpService.calculateLevelByXp(user.xp);
+
     return this.generateLevelEmbed(discordUser, level, false);
   }
 

@@ -59,7 +59,8 @@ export class LeaderboardService {
     return leaderboard;
   }
 
-  @Cron('*/5 * * * *')
+  @Cron('*/10 * * * * *')
+  // @Cron('*/5 * * * *')
   async updateLeaderboard() {
     this.logger.log('Updating leaderboard...');
 

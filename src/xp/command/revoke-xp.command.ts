@@ -9,7 +9,6 @@ import {
 } from 'discord.js';
 import { RevokeXpOptions } from '../option/revoke-xp.options';
 import { XpService } from '../xp.service';
-import { XpTransactionSource } from '@prisma/client';
 
 @SubCommand({
   name: 'revoke',
@@ -33,22 +32,19 @@ export class RevokeXpCommand {
     @InteractionEvent(SlashCommandPipe) options: RevokeXpOptions,
   ) {
     const user = await interaction.guild.members.fetch(options.user);
-    const { level } = await this.xpService.removeXp(
-      user,
-      options.amount,
-      XpTransactionSource.ADMIN,
-      options.reason,
-    );
+
+    const { amount, reason } = options;
+    const { level } = await this.xpService.removeXp(user, amount, reason);
 
     const embed = new EmbedBuilder()
       .setColor(Colors.Red)
       .setDescription(
-        `경험치를 ${user.user.username}님에게 ${options.amount}만큼 제거했습니다.`,
+        `경험치를 ${user.user.username}님에게 ${amount}만큼 제거했습니다.`,
       )
       .setFields(
         {
           name: '제거 경험치',
-          value: `${options.amount}`,
+          value: `${amount}`,
           inline: true,
         },
         {
@@ -62,8 +58,8 @@ export class RevokeXpCommand {
           inline: true,
         },
         {
-          name: '지급 사유',
-          value: options.reason ?? '없음',
+          name: '제거 사유',
+          value: reason ?? '없음',
         },
       );
 
