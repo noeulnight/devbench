@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `product` ADD COLUMN `type` ENUM('ROLE', 'OTHER') NOT NULL DEFAULT 'OTHER';

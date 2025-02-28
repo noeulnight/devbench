@@ -1,17 +1,23 @@
+import { InjectDiscordClient } from '@discord-nestjs/core';
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PurchaseStatus, User } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
+import { ProductType, PurchaseStatus, User } from '@prisma/client';
+import { Client } from 'discord.js';
 import { PointService } from 'src/point/point.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class PurchaseService {
   constructor(
+    @InjectDiscordClient()
+    private readonly discordClient: Client,
     private readonly prismaService: PrismaService,
     private readonly pointService: PointService,
+    private readonly configService: ConfigService,
   ) {}
 
   public async getPurchasesByUserId(userId: string) {
@@ -19,6 +25,9 @@ export class PurchaseService {
       where: { userId },
       include: {
         product: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
 
@@ -49,13 +58,19 @@ export class PurchaseService {
         tx,
       });
 
+      let status: PurchaseStatus = PurchaseStatus.PENDING;
+      if (product.type === ProductType.ROLE) {
+        await this.addRole(user.id, product.id);
+        status = PurchaseStatus.COMPLETED;
+      }
+
       return tx.purchase.create({
         data: {
           userId: user.id,
           productId: product.id,
           transactionId: point.id,
           price: product.price,
-          status: PurchaseStatus.PENDING,
+          status,
         },
       });
     });
@@ -71,5 +86,18 @@ export class PurchaseService {
     if (!purchase) throw new NotFoundException('구매 내역을 찾을 수 없습니다.');
 
     return purchase;
+  }
+
+  private async addRole(userId: string, productId: number) {
+    const productRoles = await this.prismaService.productRole.findMany({
+      where: { productId },
+    });
+    const roleIds = productRoles.map((productRole) => productRole.roleId);
+    const guild = await this.discordClient.guilds.fetch(
+      this.configService.get('DISCORD_GUILD_ID'),
+    );
+    const member = await guild.members.fetch(userId);
+
+    await member.roles.add(roleIds);
   }
 }

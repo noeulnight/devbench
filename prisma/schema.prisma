@@ -77,14 +77,32 @@ model Product {
   price           Int
   productImageUrl String
   description     String?
+  type            ProductType @default(OTHER)
 
   isHidden Boolean @default(false)
 
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  purchase  Purchase[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  purchase    Purchase[]
+  ProductRole ProductRole[]
 
   @@map("product")
+}
+
+enum ProductType {
+  ROLE
+  OTHER
+}
+
+model ProductRole {
+  id Int @id @default(autoincrement())
+
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+
+  roleId String
+
+  @@map("product_role")
 }
 
 model Purchase {
