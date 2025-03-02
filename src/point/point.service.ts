@@ -46,12 +46,12 @@ export class PointService {
     userId,
     amount,
     reason,
-    tx,
+    tx = this.prismaService,
   }: {
     userId: string;
     amount: number;
     reason?: string;
-    tx: Prisma.TransactionClient;
+    tx?: Prisma.TransactionClient;
   }) {
     await tx.user.update({
       where: { id: userId },

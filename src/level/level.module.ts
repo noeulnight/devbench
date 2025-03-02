@@ -6,6 +6,7 @@ import { LevelImageModule } from 'src/level-image/level-image.module';
 import { XpModule } from 'src/xp/xp.module';
 import { LevelCommand } from './command/level.command';
 import { PointModule } from 'src/point/point.module';
+import { ContextLevelCommand } from './command/context-level.command';
 
 @Module({
   imports: [
@@ -15,6 +16,6 @@ import { PointModule } from 'src/point/point.module';
     PointModule,
     XpModule,
   ],
-  providers: [LevelService, LevelCommand],
+  providers: [LevelService, LevelCommand, ContextLevelCommand],
 })
 export class LevelModule {}

@@ -32,7 +32,7 @@ import { PurchaseModule } from './purchase/purchase.module';
         registerCommandOptions: [
           {
             forGuild: configSerivce.get('DISCORD_GUILD_ID'),
-            removeCommandsBefore: true,
+            // removeCommandsBefore: true,
             allowFactory: (message: Message) =>
               !message.author.bot &&
               message.member.id === '403025222921486338' &&
