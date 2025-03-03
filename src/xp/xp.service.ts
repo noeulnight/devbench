@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { TransactionSource } from '@prisma/client';
 import { TransactionType } from '@prisma/client';
-import { GuildMember } from 'discord.js';
+import { GuildMember, Message } from 'discord.js';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 
@@ -19,11 +19,63 @@ export interface CalculateLevelByXpResult {
 @Injectable()
 export class XpService {
   private readonly levelPerXp = 98;
+  private readonly xpPerMessageMin = 5;
+  private readonly xpPerMessageMax = 15;
 
   constructor(
     private readonly userService: UserService,
     private readonly prismaService: PrismaService,
   ) {}
+
+  public async getXpEvents({
+    roleIds,
+    channelId,
+  }: {
+    roleIds?: string[];
+    channelId?: string;
+  }) {
+    return this.prismaService.xpEvent.findMany({
+      where: {
+        OR: [
+          {
+            roleId: null,
+            channelId: null,
+            OR: [{ endDate: { gte: new Date() } }, { endDate: null }],
+          },
+          {
+            roleId: { in: roleIds },
+            OR: [{ endDate: { gte: new Date() } }, { endDate: null }],
+          },
+          {
+            channelId,
+            OR: [{ endDate: { gte: new Date() } }, { endDate: null }],
+          },
+        ],
+      },
+    });
+  }
+
+  public async calculateXpAmount(message: Message) {
+    const content = message.content;
+
+    let xpMax = this.xpPerMessageMax;
+    if (content.length < 10) xpMax = 8;
+
+    const userRoles = message.member.roles.cache.map((role) => role.id);
+    const messageChannelId = message.channel.id;
+
+    const xpEvents = await this.getXpEvents({
+      roleIds: userRoles,
+      channelId: messageChannelId,
+    });
+
+    const eventAmount = xpEvents.reduce((acc, xpEvent) => acc + xpEvent.xp, 0);
+    const defaultAmount =
+      Math.floor(Math.random() * (xpMax - this.xpPerMessageMin + 1)) +
+      this.xpPerMessageMin;
+
+    return defaultAmount + eventAmount;
+  }
 
   public calculateLevelByXp(xp: number): CalculateLevelByXpResult {
     const level = Math.floor(

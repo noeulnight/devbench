@@ -13,9 +13,6 @@ import { CalculateLevelByXpResult, XpService } from 'src/xp/xp.service';
 
 @Injectable()
 export class LevelService {
-  private readonly xpPerMessageMin = 5;
-  private readonly xpPerMessageMax = 15;
-
   constructor(
     private readonly xpService: XpService,
     private readonly userService: UserService,
@@ -23,22 +20,12 @@ export class LevelService {
     private readonly pointService: PointService,
   ) {}
 
-  private calculateAmount(length: number) {
-    let xpMax = this.xpPerMessageMax;
-    if (length < 10) xpMax = 8;
-
-    return (
-      Math.floor(Math.random() * (xpMax - this.xpPerMessageMin + 1)) +
-      this.xpPerMessageMin
-    );
-  }
-
   @On('messageCreate')
   async onMessageCreate(message: Message) {
     if (message.author.bot) return;
     if (message.content.length < 2) return;
 
-    const amount = this.calculateAmount(message.content.length);
+    const amount = await this.xpService.calculateXpAmount(message);
     const { hasLevelUp, level } = await this.xpService.addXp(
       message.member,
       amount,

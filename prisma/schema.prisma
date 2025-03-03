@@ -132,3 +132,17 @@ enum PurchaseStatus {
   COMPLETED
   FAILED
 }
+
+model XpEvent {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  roleId    String?
+  channelId String?
+  xp        Int
+
+  startDate DateTime
+  endDate   DateTime?
+
+  @@map("xp_event")
+}
