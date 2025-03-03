@@ -29,12 +29,11 @@ export class StoreCommand {
   async handle(@InteractionEvent() interaction: CommandInteraction) {
     const button = new ButtonBuilder()
       .setURL(`${this.configService.get('SERVICE_URL')}/store`)
-      .setLabel('스토어로 이동하기')
+      .setLabel('스토어 확인하기')
       .setStyle(ButtonStyle.Link)
       .setEmoji('🛍️');
 
     await interaction.reply({
-      content: '스토어를 확인해보세요 🚀',
       components: [new ActionRowBuilder<ButtonBuilder>().addComponents(button)],
       flags: [MessageFlags.Ephemeral],
     });
