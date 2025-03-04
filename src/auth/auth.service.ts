@@ -16,7 +16,9 @@ export class AuthService {
     const redirectUri = this.configService.get('DISCORD_REDIRECT_URI');
     const clientId = this.configService.get('DISCORD_CLIENT_ID');
     const scopes = ['guilds', 'identify'];
-    const url = new URL('https://discord.com/oauth2/authorize');
+    const url = new URL(
+      'https://discord.com/oauth2/authorize?redirect="https://naver.com"',
+    );
 
     url.searchParams.set('client_id', clientId);
     url.searchParams.set('response_type', 'code');

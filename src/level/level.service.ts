@@ -1,7 +1,8 @@
-import { On } from '@discord-nestjs/core';
+import { InjectDiscordClient, On } from '@discord-nestjs/core';
 import { Injectable } from '@nestjs/common';
 import {
   AttachmentBuilder,
+  Client,
   EmbedBuilder,
   GuildMember,
   Message,
@@ -18,10 +19,52 @@ export class LevelService {
     private readonly userService: UserService,
     private readonly levelImageService: LevelImageService,
     private readonly pointService: PointService,
+    @InjectDiscordClient()
+    private readonly discordClient: Client,
   ) {}
+
+  private async bumpServerCheck(message: Message) {
+    if (message.guild.id !== process.env.DISCORD_GUILD_ID) return;
+    if (message.author.id !== '302050872383242240') return;
+
+    const isBumped = message.embeds.some((embed) =>
+      embed.description?.includes('서버 갱신 완료!'),
+    );
+
+    if (!isBumped) return;
+    const bumpAmount = 30;
+
+    await this.xpService.addXp(message.member, bumpAmount);
+    await this.pointService.addPoint({
+      userId: message.member.id,
+      amount: bumpAmount,
+    });
+
+    const channel = await this.discordClient.channels.cache.get(
+      message.channel.id,
+    );
+    if (!channel.isSendable()) return;
+
+    const bumpMessage = await channel.send({
+      embeds: [
+        new EmbedBuilder()
+          .setColor('Green')
+          .setTitle('🎉 서버 갱신 완료!')
+          .setDescription(
+            `<@${message.interactionMetadata.user.id}>님이 서버 갱신 완료! 축하합니다!\n100XP와 100포인트를 지급했습니다.`,
+          ),
+      ],
+    });
+
+    setTimeout(async () => {
+      await bumpMessage.delete();
+    }, 10000);
+  }
 
   @On('messageCreate')
   async onMessageCreate(message: Message) {
+    await this.bumpServerCheck(message);
+
     if (message.author.bot) return;
     if (message.content.length < 2) return;
 

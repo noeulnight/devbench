@@ -12,6 +12,7 @@ import { ProductModule } from './product/product.module';
 import { AuthModule } from './auth/auth.module';
 import { DiscordModule as DiscordNestModule } from './discord/discord.module';
 import { PurchaseModule } from './purchase/purchase.module';
+import { WarnModule } from './warn/warn.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { PurchaseModule } from './purchase/purchase.module';
     LeaderboardModule,
     DiscordNestModule,
     PurchaseModule,
+    WarnModule,
   ],
 })
 export class AppModule {}

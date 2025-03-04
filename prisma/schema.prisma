@@ -16,12 +16,14 @@ model User {
   level Int @default(0)
   point Int @default(0)
   xp    Int @default(0)
+  warn  Int @default(0)
 
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   transactions Transaction[]
   leaderboard  Leaderboard?
   Purchase     Purchase[]
+  WarnHistory  WarnHistory[]
 
   @@map("user")
 }
@@ -145,4 +147,33 @@ model XpEvent {
   endDate   DateTime?
 
   @@map("xp_event")
+}
+
+model WarnHistory {
+  id Int @id @default(autoincrement())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  warnTypeId Int
+  warnType   WarnType @relation(fields: [warnTypeId], references: [id])
+
+  reason String?
+  weight Int     @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("punishment_history")
+}
+
+model WarnType {
+  id Int @id @default(autoincrement())
+
+  name        String
+  description String?
+  weight      Int           @default(1)
+  warnHistory WarnHistory[]
+
+  @@map("warn_type")
 }
