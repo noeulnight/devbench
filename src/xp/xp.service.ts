@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { TransactionSource } from '@prisma/client';
 import { TransactionType } from '@prisma/client';
-import { GuildMember, Message } from 'discord.js';
+import { Message } from 'discord.js';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 
@@ -116,8 +116,8 @@ export class XpService {
     };
   }
 
-  public async addXp(guildUser: GuildMember, amount: number, reason?: string) {
-    const user = await this.userService.getUserById(guildUser.id);
+  public async addXp(userId: string, amount: number, reason?: string) {
+    const user = await this.userService.getUserById(userId);
 
     const xp = user.xp + amount;
     const level = this.calculateLevelByXp(xp);
@@ -145,12 +145,8 @@ export class XpService {
     });
   }
 
-  public async removeXp(
-    guildUser: GuildMember,
-    amount: number,
-    reason?: string,
-  ) {
-    const user = await this.userService.getUserById(guildUser.id);
+  public async removeXp(userId: string, amount: number, reason?: string) {
+    const user = await this.userService.getUserById(userId);
     const xp = user.xp - amount < 0 ? 0 : user.xp - amount;
     const level = this.calculateLevelByXp(xp);
 

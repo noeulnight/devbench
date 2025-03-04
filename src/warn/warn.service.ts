@@ -46,7 +46,7 @@ export class WarnService {
 
   public async createWarnHistory(options: WarnOptions) {
     const { user: userId, reason, note, weight } = options;
-    const user = await this.userService.getUserById(userId);
+    const user = await this.userService.getUserById(userId, true);
 
     return this.prismaService.$transaction(async (tx) => {
       const warnType = await tx.warnType.findUnique({

@@ -31,10 +31,11 @@ export class GrantXpCommand {
     @InteractionEvent() interaction: CommandInteraction,
     @InteractionEvent(SlashCommandPipe) options: GrantXpOptions,
   ) {
-    const user = await interaction.guild.members.fetch(options.user);
+    const userId = options.user;
+    const user = await interaction.guild.members.fetch(userId);
 
     const { amount, reason } = options;
-    const { level } = await this.xpService.addXp(user, amount, reason);
+    const { level } = await this.xpService.addXp(userId, amount, reason);
 
     const embed = new EmbedBuilder()
       .setColor(Colors.Green)

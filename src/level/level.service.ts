@@ -28,7 +28,7 @@ export class LevelService {
     if (message.author.id !== '302050872383242240') return;
 
     const isBumped = message.embeds.some((embed) =>
-      embed.description?.includes('서버 갱신 완료!'),
+      embed.description?.includes('서버 갱신 완료'),
     );
     if (!isBumped) return;
 
@@ -37,27 +37,26 @@ export class LevelService {
     );
     if (!channel.isSendable()) return;
 
+    const userId = message.interactionMetadata.user.id;
+
     const bumpAmount = 30;
-    await this.xpService.addXp(message.member, bumpAmount);
+    await this.xpService.addXp(userId, bumpAmount);
     await this.pointService.addPoint({
-      userId: message.member.id,
+      userId,
       amount: bumpAmount,
     });
 
-    const bumpMessage = await channel.send({
+    await channel.send({
       embeds: [
         new EmbedBuilder()
           .setColor('Green')
           .setTitle('🎉 서버 갱신 완료!')
           .setDescription(
-            `<@${message.interactionMetadata.user.id}>님이 서버 갱신 완료! 축하합니다!\n100XP와 100포인트를 지급했습니다.`,
-          ),
+            `<@${message.interactionMetadata.user.id}>님이 서버 갱신 완료!\n100XP와 100포인트를 지급했습니다.`,
+          )
+          .setTimestamp(),
       ],
     });
-
-    setTimeout(async () => {
-      await bumpMessage.delete();
-    }, 10000);
   }
 
   @On('messageCreate')
@@ -69,7 +68,7 @@ export class LevelService {
 
     const amount = await this.xpService.calculateXpAmount(message);
     const { hasLevelUp, level } = await this.xpService.addXp(
-      message.member,
+      message.member.id,
       amount,
     );
 

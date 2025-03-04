@@ -85,8 +85,8 @@ export class ContextRevokeXpCommand {
 
     const { amount, reason, userId } = dto;
     const user = await interaction.guild.members.fetch(userId);
+    const { level } = await this.xpService.removeXp(userId, amount, reason);
 
-    const { level } = await this.xpService.removeXp(user, amount, reason);
     const embed = new EmbedBuilder()
       .setColor(Colors.Green)
       .setDescription(

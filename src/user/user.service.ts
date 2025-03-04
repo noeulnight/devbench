@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { InjectDiscordClient } from '@discord-nestjs/core';
 import { Client } from 'discord.js';
@@ -7,6 +7,7 @@ import {
   BotException,
   UserNotFoundException,
 } from './exception/user.exception';
+import { DiscordException } from 'src/common/exception/discord.exception';
 
 @Injectable()
 export class UserService {
@@ -17,11 +18,23 @@ export class UserService {
     private readonly prismaService: PrismaService,
   ) {}
 
-  public async getUserById(id: string) {
+  public async getUserById(id: string, forceCreate = false) {
     const cachedUser = await this.prismaService.user.findUnique({
       where: { id },
       include: { leaderboard: true },
     });
+
+    if (forceCreate) {
+      if (cachedUser) return cachedUser;
+      return this.prismaService.user.create({
+        data: {
+          id,
+          nickname: '알 수 없음',
+          avatarUrl: 'https://cdn.discordapp.com/embed/avatars/0.png',
+        },
+        include: { leaderboard: true },
+      });
+    }
 
     try {
       const guildMember = await this.client.guilds.cache
@@ -45,6 +58,7 @@ export class UserService {
 
       return user;
     } catch (error) {
+      if (error instanceof DiscordException) throw error;
       if (!cachedUser) throw new UserNotFoundException();
       return cachedUser;
     }
