@@ -18,34 +18,34 @@ export class UserService {
   ) {}
 
   public async getUserById(id: string) {
-    const guildMember = await this.client.guilds.cache
-      .get(this.configService.get('DISCORD_GUILD_ID'))
-      .members.fetch(id);
-    if (guildMember.user.bot) throw new BotException();
-
-    if (!guildMember) {
-      const user = await this.prismaService.user.findUnique({
-        where: { id },
-      });
-      if (!user) throw new UserNotFoundException();
-
-      return user;
-    }
-
-    const user = await this.prismaService.user.upsert({
+    const cachedUser = await this.prismaService.user.findUnique({
       where: { id },
-      create: {
-        id,
-        nickname: guildMember?.displayName,
-        avatarUrl: guildMember?.user.avatarURL(),
-      },
-      update: {
-        nickname: guildMember?.displayName,
-        avatarUrl: guildMember?.user.avatarURL(),
-      },
-      include: { leaderboard: true },
     });
 
-    return user;
+    try {
+      const guildMember = await this.client.guilds.cache
+        .get(this.configService.get('DISCORD_GUILD_ID'))
+        .members.fetch(id);
+      if (guildMember.user.bot) throw new BotException();
+
+      const user = await this.prismaService.user.upsert({
+        where: { id },
+        create: {
+          id,
+          nickname: guildMember?.displayName,
+          avatarUrl: guildMember?.user.avatarURL(),
+        },
+        update: {
+          nickname: guildMember?.displayName,
+          avatarUrl: guildMember?.user.avatarURL(),
+        },
+        include: { leaderboard: true },
+      });
+
+      return user;
+    } catch (error) {
+      if (!cachedUser) throw new UserNotFoundException();
+      return cachedUser;
+    }
   }
 }
