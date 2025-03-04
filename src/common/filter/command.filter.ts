@@ -6,7 +6,7 @@ import {
   MessageFlags,
 } from 'discord.js';
 import { DiscordException } from '../exception/discord.exception';
-import { BotException } from 'src/user/exception/bot.exception';
+import { BotException } from 'src/user/exception/user.exception';
 
 @Catch(DiscordException)
 export class CommandExceptionFilter implements ExceptionFilter {

@@ -3,7 +3,10 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { InjectDiscordClient } from '@discord-nestjs/core';
 import { Client } from 'discord.js';
 import { ConfigService } from '@nestjs/config';
-import { BotException } from './exception/bot.exception';
+import {
+  BotException,
+  UserNotFoundException,
+} from './exception/user.exception';
 
 @Injectable()
 export class UserService {
@@ -24,7 +27,7 @@ export class UserService {
       const user = await this.prismaService.user.findUnique({
         where: { id },
       });
-      if (!user) throw new NotFoundException('존재하지 않는 유저입니다.');
+      if (!user) throw new UserNotFoundException();
 
       return user;
     }
