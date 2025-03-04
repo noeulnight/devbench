@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { InjectDiscordClient } from '@discord-nestjs/core';
 import { Client } from 'discord.js';
 import { ConfigService } from '@nestjs/config';
+import { BotException } from './exception/bot.exception';
 
 @Injectable()
 export class UserService {
@@ -17,6 +18,7 @@ export class UserService {
     const guildMember = await this.client.guilds.cache
       .get(this.configService.get('DISCORD_GUILD_ID'))
       .members.fetch(id);
+    if (guildMember.user.bot) throw new BotException();
 
     if (!guildMember) {
       const user = await this.prismaService.user.findUnique({

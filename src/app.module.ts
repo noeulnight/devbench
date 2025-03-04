@@ -33,7 +33,6 @@ import { WarnModule } from './warn/warn.module';
         registerCommandOptions: [
           {
             forGuild: configSerivce.get('DISCORD_GUILD_ID'),
-            // removeCommandsBefore: true,
             allowFactory: (message: Message) =>
               !message.author.bot &&
               message.member.id === '403025222921486338' &&
