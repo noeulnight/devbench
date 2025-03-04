@@ -30,20 +30,19 @@ export class LevelService {
     const isBumped = message.embeds.some((embed) =>
       embed.description?.includes('서버 갱신 완료!'),
     );
-
     if (!isBumped) return;
-    const bumpAmount = 30;
-
-    await this.xpService.addXp(message.member, bumpAmount);
-    await this.pointService.addPoint({
-      userId: message.member.id,
-      amount: bumpAmount,
-    });
 
     const channel = await this.discordClient.channels.cache.get(
       message.channel.id,
     );
     if (!channel.isSendable()) return;
+
+    const bumpAmount = 30;
+    await this.xpService.addXp(message.member, bumpAmount);
+    await this.pointService.addPoint({
+      userId: message.member.id,
+      amount: bumpAmount,
+    });
 
     const bumpMessage = await channel.send({
       embeds: [
