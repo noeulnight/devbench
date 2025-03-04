@@ -39,7 +39,7 @@ export class LevelService {
 
     const userId = message.interactionMetadata.user.id;
 
-    const bumpAmount = 30;
+    const bumpAmount = 100;
     await this.xpService.addXp(userId, bumpAmount);
     await this.pointService.addPoint({
       userId,
