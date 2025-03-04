@@ -20,6 +20,7 @@ export class UserService {
   public async getUserById(id: string) {
     const cachedUser = await this.prismaService.user.findUnique({
       where: { id },
+      include: { leaderboard: true },
     });
 
     try {
