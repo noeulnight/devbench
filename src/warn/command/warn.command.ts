@@ -35,9 +35,6 @@ export class WarnHistoryCommand {
       .setDescription(
         `<@${interaction.user.id}>님에게 지급된 최근 5개의 경고 내역을 알려드립니다.`,
       )
-      .setFooter({
-        text: `해당 메시지는 10초 후에 자동으로 삭제됩니다.`,
-      })
       .addFields(
         {
           name: '총 경고 횟수',
@@ -52,7 +49,7 @@ export class WarnHistoryCommand {
       )
       .addFields(
         history.map((warn) => ({
-          name: warn.warnType.name,
+          name: `${warn.warnType.name} #${warn.id}`,
           value: `가중치: ${warn.weight}\n지급 일시: ${warn.createdAt.toLocaleString('ko-KR')}`,
         })),
       );
