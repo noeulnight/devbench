@@ -33,7 +33,7 @@ export class WarnService {
       orderBy: {
         createdAt: 'desc',
       },
-      take: 5,
+      take: 10,
     });
     const { warn: totalWeight } = await this.userService.getUserById(userId);
 

@@ -33,7 +33,7 @@ export class WarnHistoryCommand {
       .setColor(Colors.Red)
       .setTitle('🚨 경고 내역 안내')
       .setDescription(
-        `<@${interaction.user.id}>님에게 지급된 최근 5개의 경고 내역을 알려드립니다.`,
+        `<@${interaction.user.id}>님에게 지급된 최근 10개의 경고 내역을 알려드립니다.`,
       )
       .addFields(
         {
@@ -47,12 +47,15 @@ export class WarnHistoryCommand {
           inline: true,
         },
       )
-      .addFields(
-        history.map((warn) => ({
-          name: `${warn.warnType.name} #${warn.id}`,
-          value: `가중치: ${warn.weight}\n지급 일시: ${warn.createdAt.toLocaleString('ko-KR')}`,
-        })),
-      );
+      .addFields({
+        name: '경고 내역',
+        value: history
+          .map(
+            (warn) =>
+              `**#${warn.id}** ${warn.warnType.name} ${warn.warnType.description ? `(${warn.warnType.description})` : ''}\n┕ 가중치: ${warn.weight}\n┕ 지급일: ${warn.createdAt.toLocaleString('ko-KR')}`,
+          )
+          .join('\n\n'),
+      });
 
     await interaction.reply({
       flags: [MessageFlags.Ephemeral],
