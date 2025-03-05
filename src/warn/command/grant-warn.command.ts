@@ -10,6 +10,7 @@ import {
   Colors,
   CommandInteraction,
   EmbedBuilder,
+  Events,
   Interaction,
 } from 'discord.js';
 import { WarnOptions } from '../option/warn.options';
@@ -70,7 +71,7 @@ export class WarnCommand {
     }, 10000);
   }
 
-  @On('interactionCreate')
+  @On(Events.InteractionCreate)
   async onInteractionCreate(@InteractionEvent() interaction: Interaction) {
     if (!interaction.isAutocomplete()) return;
     if (interaction.options.getSubcommand() !== 'grant-warn') return;

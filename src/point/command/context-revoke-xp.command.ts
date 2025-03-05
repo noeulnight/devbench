@@ -14,6 +14,7 @@ import {
   Colors,
   ContextMenuCommandInteraction,
   EmbedBuilder,
+  Events,
   MessageFlags,
   ModalBuilder,
   ModalSubmitInteraction,
@@ -72,7 +73,7 @@ export class ContextRevokePointCommand {
     await interaction.showModal(modal);
   }
 
-  @On('interactionCreate')
+  @On(Events.InteractionCreate)
   @UseGuards(ModalInteractionGuard)
   async onModalSubmit(
     @InteractionEvent() interaction: ModalSubmitInteraction,

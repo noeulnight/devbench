@@ -11,7 +11,7 @@ model User {
   id String @id
 
   nickname  String
-  avatarUrl String
+  avatarUrl String?
 
   level Int @default(0)
   point Int @default(0)

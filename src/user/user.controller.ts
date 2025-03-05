@@ -7,6 +7,11 @@ import { UserAuthGuard } from 'src/auth/guard/auth.guard';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Get('update')
+  async getAllGuildMembers() {
+    return this.userService.fetchAllGuildMembers();
+  }
+
   @Get('me')
   @UseGuards(UserAuthGuard)
   async getMe(@Req() req: Request) {

@@ -26,6 +26,7 @@ import { WarnModule } from './warn/warn.module';
         discordClientOptions: {
           intents: [
             GatewayIntentBits.Guilds,
+            GatewayIntentBits.GuildMembers,
             GatewayIntentBits.GuildMessages,
             GatewayIntentBits.MessageContent,
           ],

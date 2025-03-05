@@ -4,6 +4,7 @@ import {
   AttachmentBuilder,
   Client,
   EmbedBuilder,
+  Events,
   GuildMember,
   Message,
 } from 'discord.js';
@@ -59,7 +60,7 @@ export class LevelService {
     });
   }
 
-  @On('messageCreate')
+  @On(Events.MessageCreate)
   async onMessageCreate(message: Message) {
     await this.bumpServerCheck(message);
 
