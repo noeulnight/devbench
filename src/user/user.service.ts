@@ -68,7 +68,6 @@ export class UserService {
         data: {
           id,
           nickname: '알 수 없음',
-          avatarUrl: 'https://cdn.discordapp.com/embed/avatars/0.png',
         },
         include: { leaderboard: true },
       });
