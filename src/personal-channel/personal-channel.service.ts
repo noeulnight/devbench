@@ -140,6 +140,11 @@ export class PersonalChannelService {
           },
           {
             id: guild.id,
+            allow: [
+              PermissionsBitField.Flags.ViewChannel,
+              PermissionsBitField.Flags.ReadMessageHistory,
+              PermissionsBitField.Flags.AddReactions,
+            ],
             deny: [
               PermissionsBitField.Flags.SendMessages,
               PermissionsBitField.Flags.SendMessagesInThreads,
