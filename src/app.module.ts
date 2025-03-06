@@ -15,6 +15,7 @@ import { PurchaseModule } from './purchase/purchase.module';
 import { WarnModule } from './warn/warn.module';
 import { PersonalChannelModule } from './personal-channel/personal-channel.module';
 import { AttendanceModule } from './attendance/attendance.module';
+import { KoreanbotsModule } from './koreanbots/koreanbots.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { AttendanceModule } from './attendance/attendance.module';
     WarnModule,
     PersonalChannelModule,
     AttendanceModule,
+    KoreanbotsModule,
   ],
 })
 export class AppModule {}

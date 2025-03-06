@@ -19,6 +19,8 @@ model User {
   warn             Int @default(0)
   attendanceStreak Int @default(0)
 
+  lastKoreanbotsHeart DateTime?
+
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
   transactions      Transaction[]
