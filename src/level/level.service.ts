@@ -24,50 +24,54 @@ export class LevelService {
     private readonly discordClient: Client,
   ) {}
 
-  // private async bumpServerCheck(message: Message) {
-  //   if (message.guild.id !== process.env.DISCORD_GUILD_ID) return;
-  //   if (message.author.id !== '302050872383242240') return;
+  private async recommendServerCheck(message: Message) {
+    if (message.guild.id !== process.env.DISCORD_GUILD_ID) return;
+    if (message.author.id !== '664647740877176832') return;
 
-  //   const isBumped = message.embeds.some((embed) =>
-  //     embed.description?.includes('서버 갱신 완료'),
-  //   );
-  //   if (!isBumped) return;
+    const up = message.embeds.some((embed) =>
+      embed.description?.includes('UP'),
+    );
+    const recommend = message.embeds.some((embed) =>
+      embed.description?.includes('추천'),
+    );
+    if (!up && !recommend) return;
 
-  //   const channel = await this.discordClient.channels.cache.get(
-  //     message.channel.id,
-  //   );
-  //   if (!channel.isSendable()) return;
+    const channel = await this.discordClient.channels.cache.get(
+      message.channel.id,
+    );
+    if (!channel.isSendable()) return;
 
-  //   const userId = message.interactionMetadata.user.id;
+    const userId = message.interactionMetadata.user.id;
 
-  //   const bumpAmount = 50;
-  //   await this.xpService.addXp({
-  //     userId,
-  //     amount: bumpAmount,
-  //     reason: '서버 갱신',
-  //   });
-  //   await this.pointService.addPoint({
-  //     userId,
-  //     amount: bumpAmount,
-  //     reason: '서버 갱신',
-  //   });
+    const amount = recommend ? 50 : 30;
+    await this.xpService.addXp({
+      userId,
+      amount,
+      reason: '서버 갱신',
+    });
+    await this.pointService.addPoint({
+      userId,
+      amount,
+      reason: '서버 갱신',
+    });
 
-  //   await channel.send({
-  //     embeds: [
-  //       new EmbedBuilder()
-  //         .setColor('Green')
-  //         .setTitle('🎉 서버 갱신 완료!')
-  //         .setDescription(
-  //           `<@${message.interactionMetadata.user.id}>님이 서버 갱신 완료!\n${bumpAmount}XP와 ${bumpAmount}포인트를 지급했습니다.`,
-  //         )
-  //         .setTimestamp(),
-  //     ],
-  //   });
-  // }
+    const successMessage = up ? '서버 갱신 완료' : '서버 추천 완료';
+    await channel.send({
+      embeds: [
+        new EmbedBuilder()
+          .setColor('Green')
+          .setTitle(`🎉 ${successMessage}!`)
+          .setDescription(
+            `<@${message.interactionMetadata.user.id}>님이 ${successMessage}!\n${amount}XP와 ${amount}포인트를 지급했습니다.`,
+          )
+          .setTimestamp(),
+      ],
+    });
+  }
 
   @On(Events.MessageCreate)
   async onMessageCreate(message: Message) {
-    // await this.bumpServerCheck(message);
+    await this.recommendServerCheck(message);
 
     if (message.author.bot) return;
     if (message.content.length < 2) return;
