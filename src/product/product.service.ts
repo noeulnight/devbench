@@ -1,22 +1,24 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
+import { SearchProductQueryDto } from './dto/search-product-query.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ProductService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  public async count() {
+  public async count(dto: SearchProductQueryDto) {
+    const { type, query } = dto;
+
     return this.prismaService.product.count({
-      where: { isHidden: false },
+      where: { isHidden: false, type, name: { contains: query } },
     });
   }
 
-  public async getProducts(pagination: PaginationQueryDto) {
-    const { page, pageSize } = pagination;
+  public async getProducts(dto: SearchProductQueryDto) {
+    const { page, pageSize, type, query } = dto;
 
     return this.prismaService.product.findMany({
-      where: { isHidden: false },
+      where: { isHidden: false, type, name: { contains: query } },
       skip: page,
       take: pageSize,
     });

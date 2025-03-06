@@ -1,16 +1,16 @@
-import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ProductService } from './product.service';
+import { SearchProductQueryDto } from './dto/search-product-query.dto';
 
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Get()
-  async getProducts(@Query() pagination: PaginationQueryDto) {
+  async getProducts(@Query() dto: SearchProductQueryDto) {
     const [nodes, totalCount] = await Promise.all([
-      this.productService.getProducts(pagination),
-      this.productService.count(),
+      this.productService.getProducts(dto),
+      this.productService.count(dto),
     ]);
 
     return { nodes, totalCount };

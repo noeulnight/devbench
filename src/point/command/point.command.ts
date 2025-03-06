@@ -32,7 +32,7 @@ export class PointCommand {
       .setTitle('☘️ 포인트 조회')
       .setColor(Colors.Green)
       .setDescription(
-        `현재 ${interaction.user.displayName}님이 소유하고 있는 포인트는 ${point.toLocaleString()}점 입니다!`,
+        `현재 ${interaction.user.displayName}님이 소유하고 있는 포인트는 ${point.toLocaleString()}P 입니다!`,
       );
 
     await interaction.reply({

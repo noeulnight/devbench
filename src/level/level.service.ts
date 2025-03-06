@@ -24,50 +24,50 @@ export class LevelService {
     private readonly discordClient: Client,
   ) {}
 
-  private async bumpServerCheck(message: Message) {
-    if (message.guild.id !== process.env.DISCORD_GUILD_ID) return;
-    if (message.author.id !== '302050872383242240') return;
+  // private async bumpServerCheck(message: Message) {
+  //   if (message.guild.id !== process.env.DISCORD_GUILD_ID) return;
+  //   if (message.author.id !== '302050872383242240') return;
 
-    const isBumped = message.embeds.some((embed) =>
-      embed.description?.includes('서버 갱신 완료'),
-    );
-    if (!isBumped) return;
+  //   const isBumped = message.embeds.some((embed) =>
+  //     embed.description?.includes('서버 갱신 완료'),
+  //   );
+  //   if (!isBumped) return;
 
-    const channel = await this.discordClient.channels.cache.get(
-      message.channel.id,
-    );
-    if (!channel.isSendable()) return;
+  //   const channel = await this.discordClient.channels.cache.get(
+  //     message.channel.id,
+  //   );
+  //   if (!channel.isSendable()) return;
 
-    const userId = message.interactionMetadata.user.id;
+  //   const userId = message.interactionMetadata.user.id;
 
-    const bumpAmount = 50;
-    await this.xpService.addXp({
-      userId,
-      amount: bumpAmount,
-      reason: '서버 갱신',
-    });
-    await this.pointService.addPoint({
-      userId,
-      amount: bumpAmount,
-      reason: '서버 갱신',
-    });
+  //   const bumpAmount = 50;
+  //   await this.xpService.addXp({
+  //     userId,
+  //     amount: bumpAmount,
+  //     reason: '서버 갱신',
+  //   });
+  //   await this.pointService.addPoint({
+  //     userId,
+  //     amount: bumpAmount,
+  //     reason: '서버 갱신',
+  //   });
 
-    await channel.send({
-      embeds: [
-        new EmbedBuilder()
-          .setColor('Green')
-          .setTitle('🎉 서버 갱신 완료!')
-          .setDescription(
-            `<@${message.interactionMetadata.user.id}>님이 서버 갱신 완료!\n${bumpAmount}XP와 ${bumpAmount}포인트를 지급했습니다.`,
-          )
-          .setTimestamp(),
-      ],
-    });
-  }
+  //   await channel.send({
+  //     embeds: [
+  //       new EmbedBuilder()
+  //         .setColor('Green')
+  //         .setTitle('🎉 서버 갱신 완료!')
+  //         .setDescription(
+  //           `<@${message.interactionMetadata.user.id}>님이 서버 갱신 완료!\n${bumpAmount}XP와 ${bumpAmount}포인트를 지급했습니다.`,
+  //         )
+  //         .setTimestamp(),
+  //     ],
+  //   });
+  // }
 
   @On(Events.MessageCreate)
   async onMessageCreate(message: Message) {
-    await this.bumpServerCheck(message);
+    // await this.bumpServerCheck(message);
 
     if (message.author.bot) return;
     if (message.content.length < 2) return;
