@@ -81,7 +81,11 @@ export class XpService {
       Math.floor(Math.random() * (xpMax - this.xpPerMessageMin + 1)) +
       this.xpPerMessageMin;
 
-    return defaultAmount + eventAmount;
+    return {
+      eventAmount,
+      defaultAmount,
+      totalAmount: defaultAmount + eventAmount,
+    };
   }
 
   public calculateLevelByXp(xp: number): CalculateLevelByXpResult {

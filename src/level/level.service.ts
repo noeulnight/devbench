@@ -72,15 +72,16 @@ export class LevelService {
     if (message.author.bot) return;
     if (message.content.length < 2) return;
 
-    const amount = await this.xpService.calculateXpAmount(message);
+    const { totalAmount, defaultAmount } =
+      await this.xpService.calculateXpAmount(message);
     const { hasLevelUp, level } = await this.xpService.addXp({
       userId: message.member.id,
-      amount,
+      amount: totalAmount,
     });
 
     await this.pointService.addPoint({
       userId: message.member.id,
-      amount,
+      amount: defaultAmount,
     });
 
     if (hasLevelUp) {
