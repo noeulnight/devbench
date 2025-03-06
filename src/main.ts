@@ -6,6 +6,7 @@ import { HttpExceptionFilter } from './common/filter/exception.filter';
 import * as cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
 import { CommandExceptionFilter } from './common/filter/command.filter';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 

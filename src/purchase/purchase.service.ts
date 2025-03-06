@@ -5,11 +5,18 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ProductType, PurchaseStatus, User } from '@prisma/client';
+import {
+  Prisma,
+  Product,
+  ProductType,
+  PurchaseStatus,
+  User,
+} from '@prisma/client';
+import { addDays } from 'date-fns';
 import { Client } from 'discord.js';
 import { PointService } from 'src/point/point.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-
+import { PersonalChannelService } from 'src/personal-channel/personal-channel.service';
 @Injectable()
 export class PurchaseService {
   constructor(
@@ -18,6 +25,7 @@ export class PurchaseService {
     private readonly prismaService: PrismaService,
     private readonly pointService: PointService,
     private readonly configService: ConfigService,
+    private readonly personalChannelService: PersonalChannelService,
   ) {}
 
   public async getPurchasesByUserId(userId: string) {
@@ -58,38 +66,75 @@ export class PurchaseService {
         tx,
       });
 
-      let status: PurchaseStatus = PurchaseStatus.PENDING;
-      if (product.type === ProductType.ROLE) {
-        await this.addRole(user.id, product.id);
-        status = PurchaseStatus.COMPLETED;
-      }
-
-      return tx.purchase.create({
+      const purchase = await tx.purchase.create({
         data: {
           userId: user.id,
           productId: product.id,
           transactionId: point.id,
           price: product.price,
-          status,
+          status: PurchaseStatus.PENDING,
         },
       });
+
+      const purchaseStatus = await this.processPurchase({
+        purchaseId: purchase.id,
+        product,
+        user,
+        tx,
+      });
+
+      return await tx.purchase.update({
+        where: { id: purchase.id },
+        data: { status: purchaseStatus },
+      });
     });
+  }
+
+  private async processPurchase({
+    purchaseId,
+    product,
+    user,
+    tx,
+  }: {
+    purchaseId: string;
+    product: Product;
+    user: User;
+    tx: Prisma.TransactionClient;
+  }) {
+    if (product.type === ProductType.ROLE) {
+      await this.addRole(user.id, product.id, tx);
+      return PurchaseStatus.COMPLETED;
+    }
+
+    if (product.type === ProductType.EXPERIENCE_BOOST) {
+      await this.addXpBoost(purchaseId, user.id, product.id, tx);
+      return PurchaseStatus.COMPLETED;
+    }
+
+    if (product.type === ProductType.PERSONAL_CHANNEL) {
+      await this.addPersonalChannel(user.id, product.id, tx);
+      return PurchaseStatus.COMPLETED;
+    }
+
+    return PurchaseStatus.PENDING;
   }
 
   public async getPurchase(id: string, user: User) {
     const purchase = await this.prismaService.purchase.findUnique({
       where: { id, userId: user.id },
-      include: {
-        product: true,
-      },
+      include: { product: true },
     });
     if (!purchase) throw new NotFoundException('구매 내역을 찾을 수 없습니다.');
 
     return purchase;
   }
 
-  private async addRole(userId: string, productId: number) {
-    const productRoles = await this.prismaService.productRole.findMany({
+  private async addRole(
+    userId: string,
+    productId: number,
+    tx: Prisma.TransactionClient,
+  ) {
+    const productRoles = await tx.productRole.findMany({
       where: { productId },
     });
     const roleIds = productRoles.map((productRole) => productRole.roleId);
@@ -99,5 +144,50 @@ export class PurchaseService {
     const member = await guild.members.fetch(userId);
 
     await member.roles.add(roleIds);
+  }
+
+  private async addXpBoost(
+    purchaseId: string,
+    userId: string,
+    productId: number,
+    tx: Prisma.TransactionClient,
+  ) {
+    const xpBoost = await tx.productXpBoost.findUnique({
+      where: { productId },
+    });
+    if (!xpBoost)
+      throw new NotFoundException(
+        '경험치 부스트 상품을 찾을 수 없습니다. 관리자에게 문의해주세요.',
+      );
+
+    await tx.xpEvent.create({
+      data: {
+        name: `${purchaseId} 경험치 부스트`,
+        userId,
+        xp: xpBoost.boostAmount,
+        startDate: new Date(),
+        endDate: addDays(new Date(), xpBoost.boostDays),
+      },
+    });
+  }
+
+  private async addPersonalChannel(
+    userId: string,
+    productId: number,
+    tx: Prisma.TransactionClient,
+  ) {
+    const productPersonalChannel = await tx.productPersonalChannel.findUnique({
+      where: { productId },
+    });
+    if (!productPersonalChannel)
+      throw new NotFoundException(
+        '개인 채널 상품을 찾을 수 없습니다. 관리자에게 문의해주세요.',
+      );
+
+    return this.personalChannelService.createOrUpdatePersonalChannel({
+      days: productPersonalChannel.channelDays,
+      userId,
+      tx,
+    });
   }
 }

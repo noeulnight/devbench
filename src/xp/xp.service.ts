@@ -30,9 +30,11 @@ export class XpService {
   public async getXpEvents({
     roleIds,
     channelId,
+    userId,
   }: {
     roleIds?: string[];
     channelId?: string;
+    userId?: string;
   }) {
     return this.prismaService.xpEvent.findMany({
       where: {
@@ -48,6 +50,10 @@ export class XpService {
           },
           {
             channelId,
+            OR: [{ endDate: { gte: new Date() } }, { endDate: null }],
+          },
+          {
+            userId,
             OR: [{ endDate: { gte: new Date() } }, { endDate: null }],
           },
         ],
@@ -67,6 +73,7 @@ export class XpService {
     const xpEvents = await this.getXpEvents({
       roleIds: userRoles,
       channelId: messageChannelId,
+      userId: message.author.id,
     });
 
     const eventAmount = xpEvents.reduce((acc, xpEvent) => acc + xpEvent.xp, 0);

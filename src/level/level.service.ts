@@ -39,7 +39,6 @@ export class LevelService {
     if (!channel.isSendable()) return;
 
     const userId = message.interactionMetadata.user.id;
-
     const bumpAmount = 100;
     await this.xpService.addXp(userId, bumpAmount);
     await this.pointService.addPoint({

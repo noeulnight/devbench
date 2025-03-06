@@ -69,7 +69,6 @@ export class ContextGrantXpCommand {
     );
 
     modal.addComponents(...modalRow);
-
     await interaction.showModal(modal);
   }
 

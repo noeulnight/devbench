@@ -18,12 +18,14 @@ model User {
   xp    Int @default(0)
   warn  Int @default(0)
 
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  transactions Transaction[]
-  leaderboard  Leaderboard?
-  Purchase     Purchase[]
-  WarnHistory  WarnHistory[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  transactions    Transaction[]
+  leaderboard     Leaderboard?
+  purchase        Purchase[]
+  warnHistory     WarnHistory[]
+  xpEvent         XpEvent[]
+  personalChannel PersonalChannel[]
 
   @@map("user")
 }
@@ -42,7 +44,7 @@ model Transaction {
 
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
-  Purchase  Purchase[]
+  purchase  Purchase[]
 
   @@map("transaction")
 }
@@ -83,17 +85,24 @@ model Product {
 
   isHidden Boolean @default(false)
 
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  purchase    Purchase[]
-  ProductRole ProductRole[]
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  purchase               Purchase[]
+  productRole            ProductRole[]
+  productXpBoost         ProductXpBoost[]
+  productPersonalChannel ProductPersonalChannel[]
 
   @@map("product")
 }
 
 enum ProductType {
-  ROLE
-  OTHER
+  PERSONAL_CHANNEL // 개인 채널
+  ROLE // 역할
+  CULTURAL_VOUCHER // 문화 상품권
+  GIFTICONS // 기프티콘
+  EXPERIENCE_BOOST // 경험치 부스트
+  GOODS // 굿즈
+  OTHER // 기타
 }
 
 model ProductRole {
@@ -105,6 +114,29 @@ model ProductRole {
   roleId String
 
   @@map("product_role")
+}
+
+model ProductXpBoost {
+  id Int @id @default(autoincrement())
+
+  productId Int     @unique
+  product   Product @relation(fields: [productId], references: [id])
+
+  boostAmount Int @default(100)
+  boostDays   Int @default(30)
+
+  @@map("product_xp_boost")
+}
+
+model ProductPersonalChannel {
+  id Int @id @default(autoincrement())
+
+  productId Int     @unique
+  product   Product @relation(fields: [productId], references: [id])
+
+  channelDays Int @default(30)
+
+  @@map("product_personal_channel")
 }
 
 model Purchase {
@@ -138,6 +170,9 @@ enum PurchaseStatus {
 model XpEvent {
   id   Int    @id @default(autoincrement())
   name String
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
 
   roleId    String?
   channelId String?
@@ -176,4 +211,22 @@ model WarnType {
   warnHistory WarnHistory[]
 
   @@map("warn_type")
+}
+
+model PersonalChannel {
+  id Int @id @default(autoincrement())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  startDate DateTime
+  endDate   DateTime?
+
+  channelId String
+
+  archivedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@map("personal_channel")
 }

@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { DiscordModule as DiscordNestModule } from './discord/discord.module';
 import { PurchaseModule } from './purchase/purchase.module';
 import { WarnModule } from './warn/warn.module';
+import { PersonalChannelModule } from './personal-channel/personal-channel.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { WarnModule } from './warn/warn.module';
     DiscordNestModule,
     PurchaseModule,
     WarnModule,
+    PersonalChannelModule,
   ],
 })
 export class AppModule {}
