@@ -14,6 +14,7 @@ import { DiscordModule as DiscordNestModule } from './discord/discord.module';
 import { PurchaseModule } from './purchase/purchase.module';
 import { WarnModule } from './warn/warn.module';
 import { PersonalChannelModule } from './personal-channel/personal-channel.module';
+import { AttendanceModule } from './attendance/attendance.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { PersonalChannelModule } from './personal-channel/personal-channel.modul
     PurchaseModule,
     WarnModule,
     PersonalChannelModule,
+    AttendanceModule,
   ],
 })
 export class AppModule {}

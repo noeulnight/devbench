@@ -47,12 +47,12 @@ export class PersonalChannelService {
       .addFields(
         {
           name: '시작일',
-          value: startDate.toLocaleDateString('ko-KR'),
+          value: `<t:${Math.floor(startDate.getTime() / 1000)}:D>`,
           inline: true,
         },
         {
           name: '만료일',
-          value: endDate.toLocaleDateString('ko-KR'),
+          value: `<t:${Math.floor(endDate.getTime() / 1000)}:D>`,
           inline: true,
         },
       );
@@ -72,12 +72,12 @@ export class PersonalChannelService {
       .addFields(
         {
           name: '시작일',
-          value: startDate.toLocaleDateString('ko-KR'),
+          value: `<t:${Math.floor(startDate.getTime() / 1000)}:D>`,
           inline: true,
         },
         {
           name: '만료일',
-          value: endDate.toLocaleDateString('ko-KR'),
+          value: `<t:${Math.floor(endDate.getTime() / 1000)}:D>`,
           inline: true,
         },
       );
@@ -89,7 +89,7 @@ export class PersonalChannelService {
       .setDescription(`개인 채널을 유지하시기 위해서는 만료일을 갱신해주세요`)
       .addFields({
         name: '만료 예정일',
-        value: endDate.toLocaleDateString('ko-KR'),
+        value: `<t:${Math.floor(endDate.getTime() / 1000)}:D>`,
       });
 
   async createOrUpdatePersonalChannel({

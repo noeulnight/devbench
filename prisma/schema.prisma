@@ -13,19 +13,21 @@ model User {
   nickname  String
   avatarUrl String?
 
-  level Int @default(0)
-  point Int @default(0)
-  xp    Int @default(0)
-  warn  Int @default(0)
+  level            Int @default(0)
+  point            Int @default(0)
+  xp               Int @default(0)
+  warn             Int @default(0)
+  attendanceStreak Int @default(0)
 
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  transactions    Transaction[]
-  leaderboard     Leaderboard?
-  purchase        Purchase[]
-  warnHistory     WarnHistory[]
-  xpEvent         XpEvent[]
-  personalChannel PersonalChannel[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  transactions      Transaction[]
+  leaderboard       Leaderboard?
+  purchase          Purchase[]
+  warnHistory       WarnHistory[]
+  xpEvent           XpEvent[]
+  personalChannel   PersonalChannel[]
+  AttendanceHistory AttendanceHistory[]
 
   @@map("user")
 }
@@ -229,4 +231,15 @@ model PersonalChannel {
   updatedAt  DateTime  @updatedAt
 
   @@map("personal_channel")
+}
+
+model AttendanceHistory {
+  id Int @id @default(autoincrement())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  date DateTime @default(now())
+
+  @@map("attendance_history")
 }

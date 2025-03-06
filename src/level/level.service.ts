@@ -39,11 +39,17 @@ export class LevelService {
     if (!channel.isSendable()) return;
 
     const userId = message.interactionMetadata.user.id;
-    const bumpAmount = 100;
-    await this.xpService.addXp(userId, bumpAmount);
+
+    const bumpAmount = 50;
+    await this.xpService.addXp({
+      userId,
+      amount: bumpAmount,
+      reason: '서버 갱신',
+    });
     await this.pointService.addPoint({
       userId,
       amount: bumpAmount,
+      reason: '서버 갱신',
     });
 
     await channel.send({
@@ -52,7 +58,7 @@ export class LevelService {
           .setColor('Green')
           .setTitle('🎉 서버 갱신 완료!')
           .setDescription(
-            `<@${message.interactionMetadata.user.id}>님이 서버 갱신 완료!\n100XP와 100포인트를 지급했습니다.`,
+            `<@${message.interactionMetadata.user.id}>님이 서버 갱신 완료!\n${bumpAmount}XP와 ${bumpAmount}포인트를 지급했습니다.`,
           )
           .setTimestamp(),
       ],
@@ -67,10 +73,10 @@ export class LevelService {
     if (message.content.length < 2) return;
 
     const amount = await this.xpService.calculateXpAmount(message);
-    const { hasLevelUp, level } = await this.xpService.addXp(
-      message.member.id,
+    const { hasLevelUp, level } = await this.xpService.addXp({
+      userId: message.member.id,
       amount,
-    );
+    });
 
     await this.pointService.addPoint({
       userId: message.member.id,

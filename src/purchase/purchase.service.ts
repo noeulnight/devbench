@@ -13,7 +13,7 @@ import {
   User,
 } from '@prisma/client';
 import { addDays } from 'date-fns';
-import { Client } from 'discord.js';
+import { Client, WebhookClient, EmbedBuilder, Colors } from 'discord.js';
 import { PointService } from 'src/point/point.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PersonalChannelService } from 'src/personal-channel/personal-channel.service';
@@ -27,6 +27,10 @@ export class PurchaseService {
     private readonly configService: ConfigService,
     private readonly personalChannelService: PersonalChannelService,
   ) {}
+
+  private purchaseWebhookClient = new WebhookClient({
+    url: this.configService.get('DISCORD_PURCHASE_WEBHOOK_URL'),
+  });
 
   public async getPurchasesByUserId(userId: string) {
     const purchases = await this.prismaService.purchase.findMany({
@@ -83,10 +87,40 @@ export class PurchaseService {
         tx,
       });
 
-      return await tx.purchase.update({
+      const updatedPurchase = await tx.purchase.update({
         where: { id: purchase.id },
         data: { status: purchaseStatus },
       });
+
+      await this.purchaseWebhookClient.send({
+        embeds: [
+          new EmbedBuilder()
+            .setColor(Colors.Green)
+            .setTitle('상품 구매 완료')
+            .setDescription(
+              `<@${user.id}>님이 ${product.name}(#${product.id}) 상품을 구매했습니다.`,
+            )
+            .addFields(
+              { name: '주문 번호', value: purchase.id },
+              { name: '구매자', value: `<@${user.id}>` },
+              { name: '상품', value: `${product.name}(${product.id})` },
+              {
+                name: '가격',
+                value: `${product.price.toLocaleString()} 포인트`,
+              },
+              {
+                name: '구매일',
+                value: updatedPurchase.createdAt.toLocaleString('ko-KR'),
+              },
+              {
+                name: '구매 상태',
+                value: updatedPurchase.status,
+              },
+            ),
+        ],
+      });
+
+      return updatedPurchase;
     });
   }
 

@@ -123,7 +123,15 @@ export class XpService {
     };
   }
 
-  public async addXp(userId: string, amount: number, reason?: string) {
+  public async addXp({
+    userId,
+    amount,
+    reason,
+  }: {
+    userId: string;
+    amount: number;
+    reason?: string;
+  }) {
     const user = await this.userService.getUserById(userId);
 
     const xp = user.xp + amount;
