@@ -119,27 +119,16 @@ export class LevelService {
   private readonly ACTIVE_USER_TIMEOUT = 1000 * 5; // 5 minutes
   @On(Events.VoiceStateUpdate)
   async onVoiceStateUpdate(_: VoiceState, newState: VoiceState) {
-    const channelId = newState.channelId;
     const userId = newState.member?.id;
     if (!userId) return;
 
+    const channelId = newState?.channelId;
     if (!channelId) {
-      if (this.intervals.has(userId)) {
-        const timer = this.intervals.get(userId);
-        clearTimeout(timer);
-        this.intervals.delete(userId);
-      }
+      this.deleteInterval(userId);
       return;
     }
     if (this.intervals.has(userId)) return;
-
-    this.intervals.set(
-      userId,
-      setTimeout(
-        () => this.checkUserInVoice(userId, channelId),
-        this.ACTIVE_USER_TIMEOUT,
-      ),
-    );
+    this.addInterval(userId, channelId);
   }
 
   public async checkUserInVoice(userId: string, channelId: string) {
@@ -151,10 +140,12 @@ export class LevelService {
         .get(DISCORD_GUILD_ID)
         ?.members.fetch(userId);
 
-      if (!member || member.voice.mute) return;
-
-      if (!member?.voice?.channel || member.voice.channelId !== channelId) {
-        this.intervals.delete(userId);
+      if (
+        !member ||
+        !member?.voice?.channel ||
+        member.voice.channelId !== channelId
+      ) {
+        this.deleteInterval(userId);
         return;
       }
 
@@ -178,15 +169,25 @@ export class LevelService {
         }),
       ]);
 
-      this.intervals.set(
-        userId,
-        setTimeout(
-          () => this.checkUserInVoice(userId, channelId),
-          this.ACTIVE_USER_TIMEOUT,
-        ),
-      );
+      this.addInterval(userId, channelId);
     } catch (error) {
       console.error('Error in checkUserInVoice:', error);
+      this.deleteInterval(userId);
+    }
+  }
+
+  private addInterval(userId: string, channelId: string) {
+    this.intervals.set(
+      userId,
+      setTimeout(
+        () => this.checkUserInVoice(userId, channelId),
+        this.ACTIVE_USER_TIMEOUT,
+      ),
+    );
+  }
+
+  private deleteInterval(userId: string) {
+    if (this.intervals.has(userId)) {
       const timer = this.intervals.get(userId);
       clearTimeout(timer);
       this.intervals.delete(userId);
