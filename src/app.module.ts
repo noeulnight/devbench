@@ -32,6 +32,7 @@ import { KoreanbotsModule } from './koreanbots/koreanbots.module';
             GatewayIntentBits.GuildMembers,
             GatewayIntentBits.GuildMessages,
             GatewayIntentBits.MessageContent,
+            GatewayIntentBits.GuildVoiceStates,
           ],
         },
         registerCommandOptions: [

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { TransactionSource } from '@prisma/client';
 import { TransactionType } from '@prisma/client';
-import { Message } from 'discord.js';
+import { GuildMember } from 'discord.js';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 
@@ -61,19 +61,28 @@ export class XpService {
     });
   }
 
-  public async calculateXpAmount(message: Message) {
-    const content = message.content;
-
+  public async calculateXpAmount({
+    content,
+    member,
+    channelId,
+    userId,
+    isVoice = false,
+  }: {
+    content?: string;
+    member: GuildMember;
+    channelId: string;
+    userId: string;
+    isVoice: boolean;
+  }) {
     let xpMax = this.xpPerMessageMax;
-    if (content.length < 10) xpMax = 8;
+    if (content && content.length < 10) xpMax = 8;
+    if (isVoice) xpMax = 10;
 
-    const userRoles = message.member.roles.cache.map((role) => role.id);
-    const messageChannelId = message.channel.id;
-
+    const roleIds = member.roles.cache.map((role) => role.id);
     const xpEvents = await this.getXpEvents({
-      roleIds: userRoles,
-      channelId: messageChannelId,
-      userId: message.author.id,
+      roleIds,
+      channelId,
+      userId,
     });
 
     const eventAmount = xpEvents.reduce((acc, xpEvent) => acc + xpEvent.xp, 0);

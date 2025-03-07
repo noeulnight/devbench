@@ -1,5 +1,6 @@
 import { InjectDiscordClient, On } from '@discord-nestjs/core';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   AttachmentBuilder,
   Client,
@@ -7,6 +8,7 @@ import {
   Events,
   GuildMember,
   Message,
+  VoiceState,
 } from 'discord.js';
 import { LevelImageService } from 'src/level-image/level-image.service';
 import { PointService } from 'src/point/point.service';
@@ -20,6 +22,7 @@ export class LevelService {
     private readonly userService: UserService,
     private readonly levelImageService: LevelImageService,
     private readonly pointService: PointService,
+    private readonly configService: ConfigService,
     @InjectDiscordClient()
     private readonly discordClient: Client,
   ) {}
@@ -77,7 +80,13 @@ export class LevelService {
     if (message.content.length < 2) return;
 
     const { totalAmount, defaultAmount } =
-      await this.xpService.calculateXpAmount(message);
+      await this.xpService.calculateXpAmount({
+        content: message.content,
+        member: message.member,
+        channelId: message.channel.id,
+        userId: message.author.id,
+        isVoice: false,
+      });
     const { hasLevelUp, level } = await this.xpService.addXp({
       userId: message.member.id,
       amount: totalAmount,
@@ -103,6 +112,84 @@ export class LevelService {
       setTimeout(async () => {
         await noticeMessage.delete();
       }, 6000);
+    }
+  }
+
+  private intervals = new Map<string, NodeJS.Timeout>();
+  private readonly ACTIVE_USER_TIMEOUT = 1000 * 5; // 5 minutes
+  @On(Events.VoiceStateUpdate)
+  async onVoiceStateUpdate(_: VoiceState, newState: VoiceState) {
+    const channelId = newState.channelId;
+    const userId = newState.member?.id;
+    if (!userId) return;
+
+    if (!channelId) {
+      if (this.intervals.has(userId)) {
+        const timer = this.intervals.get(userId);
+        clearTimeout(timer);
+        this.intervals.delete(userId);
+      }
+      return;
+    }
+    if (this.intervals.has(userId)) return;
+
+    this.intervals.set(
+      userId,
+      setTimeout(
+        () => this.checkUserInVoice(userId, channelId),
+        this.ACTIVE_USER_TIMEOUT,
+      ),
+    );
+  }
+
+  public async checkUserInVoice(userId: string, channelId: string) {
+    try {
+      if (!this.intervals.has(userId)) return;
+
+      const DISCORD_GUILD_ID = this.configService.get('DISCORD_GUILD_ID');
+      const member = await this.discordClient.guilds.cache
+        .get(DISCORD_GUILD_ID)
+        ?.members.fetch(userId);
+
+      if (!member || member.voice.mute) return;
+
+      if (!member?.voice?.channel || member.voice.channelId !== channelId) {
+        this.intervals.delete(userId);
+        return;
+      }
+
+      const { totalAmount } = await this.xpService.calculateXpAmount({
+        member,
+        channelId,
+        userId,
+        isVoice: true,
+      });
+
+      await Promise.all([
+        this.xpService.addXp({
+          userId,
+          amount: totalAmount,
+          reason: '음성 채널 참여',
+        }),
+        this.pointService.addPoint({
+          userId,
+          amount: totalAmount,
+          reason: '음성 채널 참여',
+        }),
+      ]);
+
+      this.intervals.set(
+        userId,
+        setTimeout(
+          () => this.checkUserInVoice(userId, channelId),
+          this.ACTIVE_USER_TIMEOUT,
+        ),
+      );
+    } catch (error) {
+      console.error('Error in checkUserInVoice:', error);
+      const timer = this.intervals.get(userId);
+      clearTimeout(timer);
+      this.intervals.delete(userId);
     }
   }
 
