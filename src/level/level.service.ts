@@ -116,17 +116,23 @@ export class LevelService {
   }
 
   private intervals = new Map<string, NodeJS.Timeout>();
-  private readonly ACTIVE_USER_TIMEOUT = 1000 * 5; // 5 minutes
+  private readonly ACTIVE_USER_TIMEOUT = 1000 * 5 * 60; // 5 minutes
   @On(Events.VoiceStateUpdate)
-  async onVoiceStateUpdate(_: VoiceState, newState: VoiceState) {
+  async onVoiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
     const userId = newState.member?.id;
     if (!userId) return;
 
+    const oldChannelId = oldState?.channelId;
     const channelId = newState?.channelId;
     if (!channelId) {
       this.deleteInterval(userId);
       return;
     }
+
+    if (oldChannelId !== null && oldChannelId !== channelId) {
+      this.deleteInterval(userId);
+    }
+
     if (this.intervals.has(userId)) return;
     this.addInterval(userId, channelId);
   }
@@ -140,14 +146,12 @@ export class LevelService {
         .get(DISCORD_GUILD_ID)
         ?.members.fetch(userId);
 
-      if (
-        !member ||
-        !member?.voice?.channel ||
-        member.voice.channelId !== channelId
-      ) {
+      if (!member || !member?.voice?.channel) {
         this.deleteInterval(userId);
         return;
       }
+
+      if (member.voice.mute) return;
 
       const { totalAmount } = await this.xpService.calculateXpAmount({
         member,
